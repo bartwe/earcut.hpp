@@ -84,9 +84,9 @@ private:
     template <typename Point> Node* insertNode(std::size_t i, const Point& p, Node* last);
     void removeNode(Node* p);
 
-    bool hashing;
-    double minX, maxX;
-    double minY, maxY;
+    bool hashing = false;
+    double minX = 0, maxX = 0;
+    double minY = 0, maxY = 0;
     double inv_size = 0;
 
     template <typename T, typename Alloc = std::allocator<T>>
@@ -156,7 +156,8 @@ void Earcut<N>::operator()(const Polygon& points) {
     Node* outerNode = linkedList(points[0], true);
     if (!outerNode || outerNode->prev == outerNode->next) return;
 
-    if (points.size() > 1) outerNode = eliminateHoles(points, outerNode);
+    //Remove cleanup that can cause tjunctions
+    //if (points.size() > 1) outerNode = eliminateHoles(points, outerNode);
 
     // if the shape is not too simple, we'll use z-order curve hash later; calculate polygon bbox
     hashing = threshold < 0;
@@ -381,8 +382,8 @@ Earcut<N>::cureLocalIntersections(Node* start) {
             indices.emplace_back(b->i);
 
             // remove two nodes involved
-            removeNode(p);
             removeNode(p->next);
+            removeNode(p);//whup
 
             p = start = b;
         }
@@ -607,7 +608,7 @@ Earcut<N>::sortLinked(Node* list) {
             p = q;
         }
 
-        tail->nextZ = nullptr;
+        if (tail) tail->nextZ = nullptr;
 
         if (numMerges <= 1) return list;
 
